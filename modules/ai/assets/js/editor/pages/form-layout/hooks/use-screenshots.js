@@ -21,7 +21,7 @@ const useScreenshots = ( { onData } ) => {
 
 	const abort = () => abortController.current?.abort();
 
-	const createScreenshots = async ( prompt, attachments, promptAffects ) => {
+	const createScreenshots = async ( prompt, attachments ) => {
 		abortController.current = new AbortController();
 
 		const onGenerate = ( screenshot ) => {
@@ -55,7 +55,7 @@ const useScreenshots = ( { onData } ) => {
 
 			const requestBody = {
 				prompt,
-				promptAffects,
+				prevGeneratedIds,
 				attachments: attachments.map( ( { type, content, label } ) => {
 					// Send only the data that is needed for the generation.
 					return {
@@ -64,7 +64,6 @@ const useScreenshots = ( { onData } ) => {
 						label,
 					};
 				} ),
-				prevGeneratedIds,
 			};
 
 			return generate( requestBody, abortController.current.signal )
@@ -86,20 +85,20 @@ const useScreenshots = ( { onData } ) => {
 		}
 	};
 
-	const generate = ( prompt, attachments, promptAffects ) => {
+	const generate = ( prompt, attachments ) => {
 		const placeholders = Array( screenshotsGroupCount ).fill( PENDING_VALUE );
 
 		setScreenshots( placeholders );
 
-		createScreenshots( prompt, attachments, promptAffects );
+		createScreenshots( prompt, attachments );
 	};
 
-	const regenerate = ( prompt, attachments, promptAffects ) => {
+	const regenerate = ( prompt, attachments ) => {
 		const placeholders = Array( screenshotsGroupCount ).fill( PENDING_VALUE );
 
 		setScreenshots( ( prev ) => [ ...prev, ...placeholders ] );
 
-		createScreenshots( prompt, attachments, promptAffects );
+		createScreenshots( prompt, attachments );
 	};
 
 	return {

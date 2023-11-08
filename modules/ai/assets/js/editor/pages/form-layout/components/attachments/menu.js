@@ -4,9 +4,11 @@ import { MenuItem } from './menu-item';
 import XCircleIcon from '../../../../icons/x-circle-icon';
 import PlusCircleIcon from '../../../../icons/plus-circle-icon';
 import PropTypes from 'prop-types';
+import { AttachDialog } from './attach-dialog';
 
 export const Menu = ( props ) => {
 	const [ isOpen, setIsOpen ] = useState( false );
+	const [ selectedType, setSelectedType ] = useState( null );
 	const { direction } = useTheme();
 	const anchorRef = useRef( null );
 
@@ -43,16 +45,24 @@ export const Menu = ( props ) => {
 							key={ item.type }
 							title={ item.title }
 							icon={ item.icon }
-							onClick={ () => props.onSelect( item.type ) }
+							onClick={ () => setSelectedType( item.type ) }
 						/> ) ) }
 				</Stack>
 			</Popover>
+			<AttachDialog
+				type={ selectedType }
+				onAttach={ props.onAttach }
+				onClose={ () => {
+					setIsOpen( false );
+					setSelectedType( null );
+				} }
+			/>
 		</>
 	);
 };
 
 Menu.propTypes = {
 	disabled: PropTypes.bool,
-	onSelect: PropTypes.func,
+	onAttach: PropTypes.func,
 	items: PropTypes.arrayOf( PropTypes.shape( MenuItem.propTypes ) ),
 };

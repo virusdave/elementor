@@ -1,70 +1,41 @@
-import { useState } from 'react';
 import { Menu } from './attachments/menu';
-import AttachmentJson from './attachments/attachment-json';
-import AttachmentUrl from './attachments/attachment-url';
+import ThumbnailJson from './attachments/thumbnail-json';
+import ThumbnailUrl from './attachments/thumbnail-url';
 import WebsiteIcon from '../../../icons/website-icon';
 import { __ } from '@wordpress/i18n';
 import PropTypes from 'prop-types';
+import { AttachmentPropType } from '../../../types/attachment';
 
-const ATTACHMENT_TYPE_URL = 'url';
 const ATTACHMENT_TYPE_JSON = 'json';
+const ATTACHMENT_TYPE_URL = 'url';
 
-const Attachments = ( { attachments, onAttach, onDetach, disabled } ) => {
-	const initialAttachmentType = attachments.length ? attachments[ 0 ].type : null;
-	const [ currentAttachmentType, setCurrentAttachmentType ] = useState( initialAttachmentType );
-	const showMenu = ! currentAttachmentType;
+const Attachments = ( props ) => {
+	const type = props.attachments[ 0 ]?.type;
 
-	// On external change, e.g. thumbnail generated
-	if ( initialAttachmentType && initialAttachmentType !== currentAttachmentType ) {
-		setCurrentAttachmentType( initialAttachmentType );
+	switch ( type ) {
+		case ATTACHMENT_TYPE_JSON:
+			return <ThumbnailJson { ...props } />;
+		case ATTACHMENT_TYPE_URL:
+			return <ThumbnailUrl { ...props } />;
 	}
 
 	return (
-		<>
-			{
-				showMenu && <Menu
-					disabled={ disabled }
-					items={ [ {
-						title: __( 'URL as a reference', 'elementor' ),
-						icon: WebsiteIcon,
-						type: 'url',
-					} ] }
-					onSelect={ ( type ) => {
-						setCurrentAttachmentType( type );
-					} }
-				/>
-			}
-
-			{
-				ATTACHMENT_TYPE_URL === currentAttachmentType &&
-				<AttachmentUrl
-					disabled={ disabled }
-					attachments={ attachments }
-					onAttach={ onAttach }
-					onDetach={ () => {
-						setCurrentAttachmentType( null );
-						onDetach();
-					} }
-				/>
-			}
-
-			{
-				ATTACHMENT_TYPE_JSON === currentAttachmentType &&
-				<AttachmentJson
-					disabled={ disabled }
-					attachments={ attachments }
-				/>
-			}
-		</>
+		<Menu
+			disabled={ props.disabled }
+			onAttach={ props.onAttach }
+			items={ [ {
+				title: __( 'URL as a reference', 'elementor' ),
+				icon: WebsiteIcon,
+				type: ATTACHMENT_TYPE_URL,
+			} ] }
+		/>
 	);
 };
 
 Attachments.propTypes = {
-	attachments: PropTypes.array,
-	allowAddAttachment: PropTypes.bool,
-	onAttach: PropTypes.func,
-	onDetach: PropTypes.func,
+	attachments: PropTypes.arrayOf( AttachmentPropType ).isRequired,
 	disabled: PropTypes.bool,
+	onAttach: PropTypes.func,
 };
 
 export default Attachments;

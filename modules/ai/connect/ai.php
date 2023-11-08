@@ -93,7 +93,7 @@ class Ai extends Library {
 		return $payload;
 	}
 
-	private function ai_request( $method, $endpoint, $body, $file = false, $file_name = '' ) {
+	private function ai_request( $method, $endpoint, $body, $file = false, $file_name = '', $format = 'default' ) {
 		$headers = [
 			'x-elementor-ai-version' => '2',
 		];
@@ -103,6 +103,9 @@ class Ai extends Library {
 			$body = $this->get_upload_request_body( $body, $file, $boundary, $file_name );
 			// add content type header
 			$headers['Content-Type'] = 'multipart/form-data; boundary=' . $boundary;
+		} elseif ( 'json' === $format ) {
+			$headers['Content-Type'] = 'application/json';
+			$body = wp_json_encode( $body );
 		}
 
 		return $this->http_request(
@@ -112,6 +115,7 @@ class Ai extends Library {
 				'timeout' => 100,
 				'headers' => $headers,
 				'body' => $body,
+
 			],
 			[
 				'return_type' => static::HTTP_RETURN_TYPE_ARRAY,
@@ -479,18 +483,12 @@ class Ai extends Library {
 
 	public function generate_layout( $data, $context ) {
 		$endpoint = 'generate/layout';
+		$format = 'default';
 
 		$body = [
 			'prompt' => $data['prompt'],
 			'variationType' => (int) $data['variationType'],
 		];
-
-		// If all prompt affects are the same (true/false) or empty, = set 'all' to true
-		$prompt_affects = $data['promptAffects'] ?? [];
-
-		if ( empty( $prompt_affects ) || ( count( array_unique( $prompt_affects ) ) === 1 ) ) {
-			$prompt_affects = [ 'all' => true ];
-		}
 
 		if ( ! empty( $data['prevGeneratedIds'] ) ) {
 			$body['generatedBaseTemplatesIds'] = $data['prevGeneratedIds'];
@@ -502,15 +500,16 @@ class Ai extends Library {
 			switch ( $attachment['type'] ) {
 				case 'json':
 					$endpoint = 'generate/generate-json-variation';
+					$format = 'json';
 
-					$body['json'] = wp_json_encode( [
+					$body['json'] = [
 						'type' => 'elementor',
 						'elements' => [ $attachment['content'] ],
-					] );
-
+					];
 					break;
 				case 'url':
 					$endpoint = 'generate/html-to-elementor';
+					$format = 'json';
 
 					$html = json_encode( $attachment['content'] );
 
@@ -525,7 +524,9 @@ class Ai extends Library {
 			'api_version' => ELEMENTOR_VERSION,
 			'site_lang' => get_bloginfo( 'language' ),
 			'config' => [
-				'generate' => $prompt_affects,
+				'generate' => [
+					'all' => true,
+				],
 			],
 		];
 
@@ -534,7 +535,10 @@ class Ai extends Library {
 		return $this->ai_request(
 			'POST',
 			$endpoint,
-			$body
+			$body,
+			false,
+			'',
+			$format
 		);
 	}
 

@@ -11,8 +11,6 @@ import usePromptEnhancer from '../../../hooks/use-prompt-enhancer';
 import Attachments from './attachments';
 import { useConfig } from '../context/config';
 import { AttachmentPropType } from '../../../types/attachment';
-import { PromptChips } from './prompt-chips';
-import { PromptChip } from './prompt-chip';
 
 const PROMPT_SUGGESTIONS = Object.freeze( [
 	{ text: __( 'A services section with a list layout, icons, and corresponding service descriptions for', 'elementor' ) },
@@ -84,21 +82,11 @@ const PromptForm = forwardRef( ( {
 	const previousPrompt = useRef( '' );
 	const { attachmentsTypes } = useConfig();
 
-	const isInteractionsDisabled = isEnhancing || isLoading || ! isActive || ( '' === prompt && attachments.length < 1 );
+	const isInteractionsDisabled = isEnhancing || isLoading || ! isActive || ( '' === prompt && ! attachments.length );
 
 	const attachmentsType = attachments[ 0 ]?.type || '';
 	const attachmentsConfig = attachmentsTypes[ attachmentsType ];
 	const promptSuggestions = attachmentsConfig?.promptSuggestions || PROMPT_SUGGESTIONS;
-
-	const [ promptAffects, setPromptAffects ] = useState( {
-		images: true,
-		content: true,
-		colors: true,
-	} );
-
-	const togglePromptAffect = ( affect ) => {
-		setPromptAffects( { ...promptAffects, [ affect ]: ! promptAffects[ affect ] } );
-	};
 
 	const handleBack = () => {
 		setPrompt( previousPrompt.current );
@@ -113,7 +101,7 @@ const PromptForm = forwardRef( ( {
 	return (
 		<Stack
 			component="form"
-			onSubmit={ ( e ) => onSubmit( e, prompt, promptAffects ) }
+			onSubmit={ ( e ) => onSubmit( e, prompt ) }
 			direction="row"
 			sx={ { p: 2 } }
 			alignItems="center"
@@ -137,45 +125,22 @@ const PromptForm = forwardRef( ( {
 					disabled={ isLoading }
 				/>
 
-				<Box width="100%">
-					{
-						false/* Disable for now */ && attachments.length > 0 && <PromptChips>
-							<PromptChip
-								label={ __( 'Images', 'elementor' ) }
-								onClick={ () => togglePromptAffect( 'images' ) }
-								isSelected={ promptAffects.images }
-							/>
-							<PromptChip
-								label={ __( 'Content', 'elementor' ) }
-								onClick={ () => togglePromptAffect( 'content' ) }
-								isSelected={ promptAffects.content }
-							/>
-							<PromptChip
-								label={ __( 'Colors', 'elementor' ) }
-								onClick={ () => togglePromptAffect( 'colors' ) }
-								isSelected={ promptAffects.colors }
-							/>
-						</PromptChips>
-					}
-
-					<PromptAutocomplete
-						value={ prompt }
-						disabled={ isLoading || ! isActive || isEnhancing }
-						onSubmit={ ( e ) => onSubmit( e, prompt ) }
-						options={ promptSuggestions }
-						getOptionLabel={ ( option ) => option.text ? option.text + '...' : prompt }
-						onChange={ ( _, selectedValue ) => setPrompt( selectedValue.text + ' ' ) }
-						renderInput={ ( params ) => (
-							<PromptAutocomplete.TextInput
-								{ ...params }
-								ref={ ref }
-								onChange={ ( e ) => setPrompt( e.target.value ) }
-								placeholder={ __( "Press '/' for suggested prompts or describe the layout you want to create", 'elementor' ) }
-							/>
-						) }
-					/>
-
-				</Box>
+				<PromptAutocomplete
+					value={ prompt }
+					disabled={ isLoading || ! isActive || isEnhancing }
+					onSubmit={ ( e ) => onSubmit( e, prompt ) }
+					options={ promptSuggestions }
+					getOptionLabel={ ( option ) => option.text ? option.text + '...' : prompt }
+					onChange={ ( _, selectedValue ) => setPrompt( selectedValue.text + ' ' ) }
+					renderInput={ ( params ) => (
+						<PromptAutocomplete.TextInput
+							{ ...params }
+							ref={ ref }
+							onChange={ ( e ) => setPrompt( e.target.value ) }
+							placeholder={ __( "Press '/' for suggested prompts or describe the layout you want to create", 'elementor' ) }
+						/>
+					) }
+				/>
 			</Stack>
 
 			<EnhanceButton
@@ -192,7 +157,6 @@ const PromptForm = forwardRef( ( {
 
 PromptForm.propTypes = {
 	isActive: PropTypes.bool,
-	attachmentsTypes: PropTypes.object,
 	onAttach: PropTypes.func,
 	onDetach: PropTypes.func,
 	isLoading: PropTypes.bool,

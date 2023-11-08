@@ -23,21 +23,19 @@ export const onConnect = ( data ) => {
 export const getUiConfig = () => {
 	const colorScheme = elementor?.getPreferences?.( 'ui_theme' ) || 'auto';
 	const isRTL = elementorCommon.config.isRTL;
-	const locale = elementorCommon.config.locale;
 
 	return {
 		colorScheme,
 		isRTL,
-		locale,
 	};
 };
 
 const REFORMAT_PROMPTS = [
-	{ text: __( 'Change the content to be about' ) },
-	{ text: __( 'I need the container to become more related to' ) },
-	{ text: __( 'Make the text more hard-sell oriented' ) },
-	{ text: __( 'Alter the look and feel to become more Christmas related' ) },
-	{ text: __( 'Replace all images to relate to' ) },
+	{ text: __( 'Change the content to be about', 'elementor' ) },
+	{ text: __( 'I need the container to become more related to', 'elementor' ) },
+	{ text: __( 'Make the text more hard-sell oriented', 'elementor' ) },
+	{ text: __( 'Alter the look and feel to become more Christmas related', 'elementor' ) },
+	{ text: __( 'Replace all images to relate to', 'elementor' ) },
 ];
 
 export const renderLayoutApp = ( options = {
