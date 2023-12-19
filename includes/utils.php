@@ -601,7 +601,7 @@ class Utils {
 	}
 
 	public static function has_pro() {
-		return defined( 'ELEMENTOR_PRO_VERSION' );
+		return true;
 	}
 
 	/**
